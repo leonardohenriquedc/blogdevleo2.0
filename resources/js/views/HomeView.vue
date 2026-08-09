@@ -80,13 +80,26 @@ async function loadArticles() {
     error.value = false;
 
     try {
-        articles.value = await fetchArticles();
+        const fetched = await fetchArticles();
+        articles.value = sortByDateDesc(fetched);
     } catch {
         articles.value = [];
         error.value = true;
     } finally {
         loading.value = false;
     }
+}
+
+/**
+ * Sorts articles by date, newest first. Articles without a date go last.
+ */
+function sortByDateDesc(list: Article[]): Article[] {
+    return [...list].sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : -Infinity;
+        const dateB = b.date ? new Date(b.date).getTime() : -Infinity;
+
+        return dateB - dateA;
+    });
 }
 
 onMounted(loadArticles);
