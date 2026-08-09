@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import BlogView from '../views/BlogView.vue';
 import HomeView from '../views/HomeView.vue';
+import { setDocumentTitle } from '../services/seo.js';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -35,6 +36,17 @@ const router = createRouter({
 
         return { top: 0 };
     },
+});
+
+router.afterEach((to) => {
+    switch (to.name) {
+        case 'home':
+            setDocumentTitle('Desenvolvimento e Tecnologia');
+            break;
+        default:
+            // The blog view sets a more precise title once the post loads.
+            break;
+    }
 });
 
 export default router;

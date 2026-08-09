@@ -2,16 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class BlogsController extends Controller
 {
-    public function get(String $name){
+    public function get(string $name, Request $request): View|JsonResponse
+    {
+        // Direct browser / crawler visits render the SPA shell so the
+        // initial HTML carries the article's SEO meta tags. XHR requests
+        // from the Vue app keep receiving the JSON content payload.
+        if (! $request->wantsJson()) {
+            return view('app');
+        }
+
         $content = '';
 
-        $path = Storage::disk('public')->path('blogs/' . $name . '.md');
+        $path = Storage::disk('public')->path('blogs/'.$name.'.md');
 
         $file = fopen($path, 'r');
 
@@ -21,6 +31,7 @@ class BlogsController extends Controller
 
             if (str_starts_with(trim($line), '---')) {
                 $index++;
+
                 continue;
             }
 
@@ -32,18 +43,20 @@ class BlogsController extends Controller
         fclose($file);
 
         $content = Str::markdown($content);
+
         return response()->json(['content' => $content]);
     }
 
-    public function get_all_names(){
+    public function get_all_names(): JsonResponse
+    {
         $names = Storage::disk('public')->files('blogs');
 
         $blogs = [];
 
-        foreach($names as $name){
+        foreach ($names as $name) {
             $file = Storage::disk('public')->readStream($name);
 
-            if($file){
+            if ($file) {
                 $blog = [
                     'name' => '',
                     'date' => null,
@@ -56,8 +69,8 @@ class BlogsController extends Controller
 
                 $blog['name'] = $mod;
 
-                while(($line = fgets($file)) !== false){
-                    if(str_starts_with($line, 'date:')){
+                while (($line = fgets($file)) !== false) {
+                    if (str_starts_with($line, 'date:')) {
                         $date = str_replace('date: ', '', $line);
                         $date = str_replace("\n", '', $date);
                         $blog['date'] = $date;

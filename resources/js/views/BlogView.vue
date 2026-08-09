@@ -115,12 +115,14 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { fetchArticle, fetchArticles } from '../services/api.js';
 import { articleTitle, formatDate, toSlug } from '../services/format.js';
+import { setDocumentTitle, setMetaDescription } from '../services/seo.js';
 import CodeBlock from '../components/CodeBlock.vue';
 import Loading from '../components/Loading.vue';
 
 interface ArticleMeta {
     name?: string;
     title?: string;
+    description?: string;
     date?: string;
 }
 
@@ -165,6 +167,9 @@ async function load() {
             const articles = await fetchArticles();
             const match = articles.find((item) => toSlug(item.name) === slug.value);
             meta.value = match ?? {};
+
+            setDocumentTitle(title.value);
+            setMetaDescription(meta.value?.description || '');
         } catch {
             meta.value = {};
         }

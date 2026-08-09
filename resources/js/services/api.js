@@ -7,7 +7,12 @@
 const BASE_URL = '';
 
 async function request(url) {
-    const response = await fetch(`${BASE_URL}${url}`);
+    const response = await fetch(`${BASE_URL}${url}`, {
+        headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    });
 
     if (response.status === 404) {
         const error = new Error('Recurso não encontrado');
